@@ -1,0 +1,66 @@
+#!/bin/bash
+set -e
+
+# Update system and install dependencies
+sudo apt update -y
+sudo apt install -y nginx python3 python3-pip mysql-client
+
+# Set RDS connection variables
+echo "RDS_ENDPOINT=${rds_endpoint}" > /home/ubuntu/app_config.env
+echo "DB_NAME=${rds_db_name}" >> /home/ubuntu/app_config.env
+echo "DB_USER=${rds_username}" >> /home/ubuntu/app_config.env
+echo "DB_PASS=${rds_password}" >> /home/ubuntu/app_config.env
+
+# Export environment variables
+export $(cat /home/ubuntu/app_config.env | xargs)
+
+# Create minimal Flask app
+cat > /home/ubuntu/app.py << 'PYTHON_CODE'
+from flask import Flask
+import mysql.connector, os
+
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    db = mysql.connector.connect(
+        host=os.environ["RDS_ENDPOINT"],
+        user=os.environ["DB_USER"],
+        password=os.environ["DB_PASS"],
+        database=os.environ["DB_NAME"]
+    )
+    cursor = db.cursor()
+    cursor.execute("SELECT NOW();")
+    result = cursor.fetchone()
+    return f"App is running. DB time: {result[0]}"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=80)
+PYTHON_CODE
+
+# Install Python dependencies
+sudo pip3 install flask mysql-connector-python
+
+# Create systemd service for Flask app
+cat > /etc/systemd/system/app.service << 'SYSTEMD_UNIT'
+[Unit]
+Description=Flask App
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu
+ExecStart=/usr/bin/python3 /home/ubuntu/app.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+SYSTEMD_UNIT
+
+sudo systemctl daemon-reload
+sudo systemctl enable app.service
+sudo systemctl start app.service
+
+# Ensure Nginx is running
+sudo systemctl enable nginx
+sudo systemctl start nginx

@@ -1,95 +1,133 @@
-# AWS Infrastructure with Terraform (End-to-End Project)
+# 🚖 AWS Uber-Clone Infrastructure
 
-This project provisions a complete AWS infrastructure using **Terraform**, including:
-- VPC, Subnets, and Security Groups
-- Application Load Balancer (ALB)
-- Auto Scaling EC2 Instances (with Flask app + Nginx)
-- RDS MySQL Database
+## 📘 Project Overview
 
+This repository contains **Terraform code** to deploy a complete AWS infrastructure for an **Uber-like clone application**.
+It provisions a secure, scalable, and highly available environment — including **VPC, EC2 (Auto Scaling), ALB, RDS**, and **Security Groups** — to host a Flask-based backend and Nginx web layer.
+
+---
+
+## 🏗️ Architecture Overview
+
+The infrastructure is designed with a **multi-tier, production-grade layout**:
+
+* **VPC** with segregated public and private subnets across Availability Zones
+* **Application Load Balancer (ALB)** in the public subnet to handle HTTP traffic
+* **Auto Scaling Group (ASG)** for EC2 instances hosting the app
+* **RDS MySQL** instance in a private subnet for secure data storage
+* **Security Groups** for controlled inbound/outbound access
+* **Terraform Outputs** displaying endpoints like ALB DNS and RDS address
+
+### 📊 Architecture Diagram
+
+
+![AWS Architecture](https://github.com/user-attachments/assets/9a907319-ef51-43df-8b3c-13952538b72f)
 
 ---
 
 ## 📂 Project Structure
-aws-infra-project/
-│── vpc.tf
-│── alb.tf
-│── ec2.tf
-│── rds.tf
-│── variables.tf
-│── terraform.tfvars
-│── outputs.tf
-│── user_data.sh.tftpl
+
+```
+aws-uber-clone-infra/
+├── alb.tf                 # Application Load Balancer setup
+├── ec2.tf                 # EC2 & Auto Scaling configuration
+├── main.tf                # Root Terraform configuration
+├── outputs.tf             # Terraform outputs (ALB, RDS endpoints)
+├── provider.tf            # AWS provider setup
+├── rds.tf                 # RDS MySQL database configuration
+├── security-groups.tf     # Security Group definitions
+├── terraform.tfvars       # Variable values (region, credentials)
+├── user_data.sh.tftpl     # EC2 bootstrap script for app deployment
+├── variables.tf           # Input variable definitions
+└── README.md              # Documentation
+```
 
 ---
 
-## 🚀 Steps Implemented
+## 🧰 Tools & Technologies
 
-1. Provisioned VPC and Subnets (Public + Private)
-2. Created Security Groups for ALB, EC2, and RDS
-3. Configured Application Load Balancer
-4. Created Launch Template + Auto Scaling Group
-5. Provisioned RDS MySQL Database
-6. Connected EC2 App → RDS Database
-7. Configured Auto Scaling Policies 
----
-
-## 📸 Project Outputs
-**Application running via **ALB DNS** (`terraform output alb_dns_name`) 
-<img width="1521" height="378" alt="01_alb_app" src="https://github.com/user-attachments/assets/084cd3e7-8e23-4385-8a0e-1e5502c8fe5c" />
-
-**EC2 Auto Scaling Group** instances (tagged `app-server`)
-<img width="1564" height="230" alt="02_ec2_asg" src="https://github.com/user-attachments/assets/e67352d0-77ee-4576-88ff-5d4cdbe31a0b" />
-
-**RDS MySQL Database** status = Available, endpoint visible 
-<img width="1525" height="255" alt="03_rds" src="https://github.com/user-attachments/assets/ba098fdb-6db4-48b8-9ddc-ead13c7c4739" />
-
-**Terraform Outputs** showing ALB DNS, RDS endpoint, SG, Subnets 
-<img width="1231" height="545" alt="04_terraform_outputs" src="https://github.com/user-attachments/assets/5e614191-fe9a-47f4-8764-e97516e504fd" />
-
-**Auto Scaling** 
-<img width="1545" height="281" alt="Auto Scaling" src="https://github.com/user-attachments/assets/8a207171-6a14-4cf6-8e9e-586ca5d9a8b6" />
-
-**Registered Targets**
-<img width="1540" height="385" alt="Registered Targets" src="https://github.com/user-attachments/assets/f6cf92a6-cf68-40e9-980f-bb62b7404654" />
-
-
+| Category                   | Tool / Service                          |
+| -------------------------- | --------------------------------------- |
+| **Infrastructure as Code** | Terraform                               |
+| **Cloud Provider**         | AWS                                     |
+| **Compute**                | EC2, Auto Scaling Group                 |
+| **Networking**             | VPC, Subnets, Security Groups, ALB      |
+| **Database**               | RDS (MySQL)                             |
+| **Web Server**             | Nginx                                   |
+| **Backend**                | Python (Flask)                          |
+| **Scripting**              | Bash (user data for EC2 initialization) |
 
 ---
 
-## ⚙️ Tech Stack
-- **Terraform v1.13.3**
-- **AWS Provider v6.14.1**
-- **AWS Services:** VPC, ALB, EC2, Auto Scaling, RDS, CloudWatch
-- **Languages/Tools:** Bash, Python Flask, Nginx
+## 🚀 Deployment Steps
 
----
+### 1️⃣ Clone the Repository
 
-## 📖 How to Reproduce
+```bash
+git clone https://github.com/omdivekar14/aws-uber-clone-infra.git
+cd aws-uber-clone-infra
+```
 
-1. Clone the repo:
-   ```bash
-   git clone <your-repo-url>
-   cd aws-infra-project
-Initialize Terraform:
+### 2️⃣ Initialize Terraform
+
+```bash
 terraform init
+```
 
-Validate Terraform:
+### 3️⃣ Validate Configuration
+
+```bash
 terraform validate
+```
 
-Plan Terraform:
+### 4️⃣ Preview the Plan
+
+```bash
 terraform plan
+```
 
-Apply changes:
+### 5️⃣ Apply Infrastructure
+
+```bash
 terraform apply -auto-approve
+```
 
-Get ALB DNS & test app:
-terraform output alb_dns_name
+### 6️⃣ Access the Application
 
-📌 Future Improvements
-Add CI/CD pipeline (GitHub Actions → Terraform Cloud / AWS CodePipeline)
-Use Parameter Store / Secrets Manager for DB credentials
-Add monitoring dashboards with CloudWatch or Grafana
+Once provisioning completes, view your app:
 
-👨‍💻 Author
-OM DIVEKAR - AWS FRESHER
+```bash
+terraform output
+```
 
+Copy the **ALB DNS name** → paste it into your browser.
+✅ You’ll see your **Uber Clone App** running live!
+
+### 7️⃣ Clean Up Resources
+
+```bash
+terraform destroy -auto-approve
+```
+
+---
+
+## 🖼️ Project Screenshots
+
+
+| Stage                                     | Screenshot                                                                                                                         |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Terraform Output – Successful Creation**| ![Terraform Output](https://github.com/user-attachments/assets/4c30e17e-34e3-4331-beab-91b95a611548)                               |
+| **EC2 Instances Running**                 | ![EC2 Running](https://github.com/user-attachments/assets/fefcbbcf-e4ab-47bf-ae74-662d2050b87e)                                    |
+| **Auto Scaling Group**                    | ![Auto Scaling](https://github.com/user-attachments/assets/e9da70d1-73e7-4c67-a02c-077988a99280)                                   |
+| **Registered Targets**                    | ![Registered Targets](https://github.com/user-attachments/assets/eef37ca9-5316-4287-9195-61b062963c53)                             |
+| **Nginx Live via ALB DNS**                | ![App Live](https://github.com/user-attachments/assets/92d12f01-12d1-4067-9425-49de82f0cb10)                                       |
+---
+
+## 👨‍💻 Author
+
+**Om Divekar**
+
+* 🌐 GitHub: [omdivekar14](https://github.com/omdivekar14)
+* 💼 LinkedIn: [Om Divekar](https://www.linkedin.com/in/om-divekar-7b0529362/)
+
+---

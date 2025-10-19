@@ -4,7 +4,6 @@
 
 This repository contains **Terraform code** to deploy a complete AWS infrastructure for an **Uber-like clone application**.
 It provisions a secure, scalable, and highly available environment — including **VPC, EC2 (Auto Scaling), ALB, RDS**, and **Security Groups** — to host a Nginx web layer.
-
 ---
 
 ## 🏗️ Architecture Overview

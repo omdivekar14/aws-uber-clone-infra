@@ -3,7 +3,7 @@
 ## 📘 Project Overview
 
 This repository contains **Terraform code** to deploy a complete AWS infrastructure for an **Uber-like clone application**.
-It provisions a secure, scalable, and highly available environment — including **VPC, EC2 (Auto Scaling), ALB, RDS**, and **Security Groups** — to host a Flask-based backend and Nginx web layer.
+It provisions a secure, scalable, and highly available environment — including **VPC, EC2 (Auto Scaling), ALB, RDS**, and **Security Groups** — to host a Nginx web layer.
 
 ---
 
@@ -54,7 +54,6 @@ aws-uber-clone-infra/
 | **Networking**             | VPC, Subnets, Security Groups, ALB      |
 | **Database**               | RDS (MySQL)                             |
 | **Web Server**             | Nginx                                   |
-| **Backend**                | Python (Flask)                          |
 | **Scripting**              | Bash (user data for EC2 initialization) |
 
 ---

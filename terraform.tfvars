@@ -1,16 +1,24 @@
-alb_target_group_arns = ["arn:aws:elasticloadbalancing:ap-south-1:844682013238:targetgroup/app-tg/fdbcd81bb0a1d501"]
-
+# ALB + EC2
+alb_target_group_arns  = ["arn:aws:elasticloadbalancing:ap-south-1:844682013238:targetgroup/app-tg/fdbcd81bb0a1d501"]
 ami_id                 = "ami-02d26659fd82cf299"
-ec2_security_group_id  = "sg-0befd2c5054a6c39c"
 key_name               = "linux_key"
-private_subnet_ids     = ["subnet-0f06b649ef7dda597","subnet-0821ddfe60f4861ae","subnet-0d57f1d7be72e8d28"]
-# RDS values
+
+# Security Groups (all belong to vpc-0db64bf45db3c6e62)
+alb_security_group_id  = "sg-0aa600561bd5b7644"
+ec2_security_group_id  = "sg-09d03067a4efe5427"
+rds_security_group_id  = "sg-02757aab41a178ecd"
+
+# Subnets (same VPC)
+public_subnet_ids      = ["subnet-0a53b6d82d2eec203","subnet-05c800882b7233919"]
+private_subnet_ids     = ["subnet-03579cbd6c6a768c9","subnet-0f53c036a9961f67f","subnet-04d991351c491840f"]
+rds_subnet_ids         = ["subnet-03579cbd6c6a768c9","subnet-0f53c036a9961f67f","subnet-04d991351c491840f"]
+
+# RDS configuration
 rds_db_name            = "appdb"
 rds_username           = "admin"
 rds_password           = "cL0ck$123"
 rds_instance_class     = "db.t3.micro"
 rds_allocated_storage  = 20
-rds_subnet_ids         = ["subnet-0f06b649ef7dda597","subnet-0821ddfe60f4861ae","subnet-0d57f1d7be72e8d28"]
-rds_security_group_id  = "sg-09bc360dc59d6439d"
-# VPC
-vpc_id = "vpc-04bd898357c9f3e06"
+
+# VPC (consistent)
+vpc_id = "vpc-0db64bf45db3c6e62"

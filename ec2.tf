@@ -1,18 +1,61 @@
+# ------------------------------
+# EC2 IAM Role and Instance Profile for SSM
+# ------------------------------
+resource "aws_iam_role" "ec2_ssm_role" {
+  name = "ec2-ssm-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_attach" {
+  role       = aws_iam_role.ec2_ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "ec2_ssm_profile" {
+  name = "ec2-ssm-profile"
+  role = aws_iam_role.ec2_ssm_role.name
+}
+
+# ------------------------------
+# Launch Template
+# ------------------------------
 resource "aws_launch_template" "app" {
   name_prefix   = "app-server-"
   image_id      = var.ami_id
   instance_type = var.instance_type
   key_name      = var.key_name
 
+  iam_instance_profile {
+    name = aws_iam_instance_profile.ec2_ssm_profile.name
+  }
+
   network_interfaces {
     associate_public_ip_address = false
     security_groups             = [var.ec2_security_group_id]
   }
-user_data = filebase64("${path.module}/user_data.sh.tftpl") 
+
+  user_data = filebase64("${path.module}/user_data.sh.tftpl")
+
   lifecycle {
     create_before_destroy = true
   }
 }
+
+# ------------------------------
+# Auto Scaling Group
+# ------------------------------
 resource "aws_autoscaling_group" "app_asg" {
   desired_capacity        = var.desired_capacity
   min_size                = var.min_size
@@ -20,14 +63,13 @@ resource "aws_autoscaling_group" "app_asg" {
   vpc_zone_identifier     = var.private_subnet_ids
 
   launch_template {
-    id      = aws_launch_template.app.id
-    
+    id = aws_launch_template.app.id
   }
 
-  target_group_arns       = var.alb_target_group_arns
-  health_check_type       = "ELB"
-  health_check_grace_period = 300
-  force_delete            = true
+  target_group_arns           = [aws_lb_target_group.app_tg.arn]
+  health_check_type           = "ELB"
+  health_check_grace_period   = 300
+  force_delete                = true
 
   tag {
     key                 = "Name"
@@ -36,6 +78,9 @@ resource "aws_autoscaling_group" "app_asg" {
   }
 }
 
+# ------------------------------
+# Scaling Policies & CloudWatch Alarms
+# ------------------------------
 resource "aws_autoscaling_policy" "scale_up" {
   name                   = "scale-up-cpu"
   scaling_adjustment     = 1
@@ -62,6 +107,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   statistic           = "Average"
   threshold           = 70
   alarm_actions       = [aws_autoscaling_policy.scale_up.arn]
+
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.app_asg.name
   }
@@ -77,9 +123,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu_low" {
   statistic           = "Average"
   threshold           = 30
   alarm_actions       = [aws_autoscaling_policy.scale_down.arn]
+
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.app_asg.name
   }
 }
-
-

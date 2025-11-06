@@ -53,9 +53,19 @@ variable "key_name" {
   description = "EC2 key pair name"
 }
 
+variable "alb_security_group_id" {
+  type        = string
+  description = "Security group ID for the Application Load Balancer"
+}
+
 variable "ec2_security_group_id" {
   type        = string
   description = "Security group ID for EC2 instances"
+}
+
+variable "public_subnet_ids" {
+  type        = list(string)
+  description = "List of public subnet IDs"
 }
 
 variable "private_subnet_ids" {

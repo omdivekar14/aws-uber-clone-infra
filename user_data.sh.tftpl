@@ -1,66 +1,88 @@
 #!/bin/bash
 set -e
 
-# Update system and install dependencies
+# Update and install dependencies
 sudo apt update -y
 sudo apt install -y nginx python3 python3-pip mysql-client
 
-# Set RDS connection variables
-echo "RDS_ENDPOINT=${rds_endpoint}" > /home/ubuntu/app_config.env
-echo "DB_NAME=${rds_db_name}" >> /home/ubuntu/app_config.env
-echo "DB_USER=${rds_username}" >> /home/ubuntu/app_config.env
-echo "DB_PASS=${rds_password}" >> /home/ubuntu/app_config.env
+# Create app directory
+sudo mkdir -p /home/ubuntu/app
+cd /home/ubuntu/app
 
-# Export environment variables
-export $(cat /home/ubuntu/app_config.env | xargs)
-
-# Create minimal Flask app
-cat > /home/ubuntu/app.py << 'PYTHON_CODE'
-from flask import Flask
-import mysql.connector, os
-
-app = Flask(__name__)
-
-@app.route("/")
-def index():
-    db = mysql.connector.connect(
-        host=os.environ["RDS_ENDPOINT"],
-        user=os.environ["DB_USER"],
-        password=os.environ["DB_PASS"],
-        database=os.environ["DB_NAME"]
-    )
-    cursor = db.cursor()
-    cursor.execute("SELECT NOW();")
-    result = cursor.fetchone()
-    return f"App is running. DB time: {result[0]}"
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=80)
-PYTHON_CODE
+# Save RDS connection variables from Terraform
+cat <<EOF > /home/ubuntu/app/.env
+RDS_ENDPOINT=${rds_endpoint}
+DB_NAME=${rds_db_name}
+DB_USER=${rds_username}
+DB_PASS=${rds_password}
+EOF
 
 # Install Python dependencies
 sudo pip3 install flask mysql-connector-python
 
+# Create a simple Flask app
+cat <<'PYTHON_CODE' > /home/ubuntu/app/app.py
+from flask import Flask
+import mysql.connector, os
+	
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    try:
+        db = mysql.connector.connect(
+            host=os.environ.get("RDS_ENDPOINT"),
+            user=os.environ.get("DB_USER"),
+            password=os.environ.get("DB_PASS"),
+            database=os.environ.get("DB_NAME")
+        )
+        cursor = db.cursor()
+        cursor.execute("SELECT NOW();")
+        result = cursor.fetchone()
+        return f"<h2>Uber Clone App is Running 🚀</h2><p>Database Time: {result[0]}</p>"
+    except Exception as e:
+        return f"<h3>Error connecting to DB:</h3><pre>{e}</pre>"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
+PYTHON_CODE
+
 # Create systemd service for Flask app
-cat > /etc/systemd/system/app.service << 'SYSTEMD_UNIT'
+cat <<'SYSTEMD_UNIT' | sudo tee /etc/systemd/system/app.service
 [Unit]
-Description=Flask App
+Description=Flask Uber Clone App
 After=network.target
 
 [Service]
 User=ubuntu
-WorkingDirectory=/home/ubuntu
-ExecStart=/usr/bin/python3 /home/ubuntu/app.py
+WorkingDirectory=/home/ubuntu/app
+EnvironmentFile=/home/ubuntu/app/.env
+ExecStart=/usr/bin/python3 /home/ubuntu/app/app.py
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
 SYSTEMD_UNIT
 
+# Enable Flask service
 sudo systemctl daemon-reload
 sudo systemctl enable app.service
 sudo systemctl start app.service
 
-# Ensure Nginx is running
-sudo systemctl enable nginx
-sudo systemctl start nginx
+# Configure Nginx as reverse proxy to Flask (port 5000)
+sudo tee /etc/nginx/sites-available/flask_proxy > /dev/null <<'NGINX_CONF'
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+NGINX_CONF
+
+sudo ln -sf /etc/nginx/sites-available/flask_proxy /etc/nginx/sites-enabled/flask_proxy
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo systemctl restart nginx

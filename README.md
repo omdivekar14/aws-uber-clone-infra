@@ -117,8 +117,10 @@ terraform destroy -auto-approve
 | **Terraform Output – Successful Creation**| ![Terraform Output](https://github.com/user-attachments/assets/4c30e17e-34e3-4331-beab-91b95a611548)                               |
 | **EC2 Instances Running**                 | ![EC2 Running](https://github.com/user-attachments/assets/fefcbbcf-e4ab-47bf-ae74-662d2050b87e)                                    |
 | **Auto Scaling Group**                    | ![Auto Scaling](https://github.com/user-attachments/assets/e9da70d1-73e7-4c67-a02c-077988a99280)                                   |
-| **Registered Targets**                    | ![Registered Targets](https://github.com/user-attachments/assets/eef37ca9-5316-4287-9195-61b062963c53)                             |
-| **Nginx Live via ALB DNS**                | ![App Live](https://github.com/user-attachments/assets/92d12f01-12d1-4067-9425-49de82f0cb10)                                       |
+| **VPC**                                   | <img width="1920" height="1020" alt="Screenshot 2025-10-28 075217" src="https://github.com/user-attachments/assets/a31292cc-3f62-4687-91c8-c6233c880b1c" /> |
+| **Registered Targets**                    |  <img width="1915" height="827" alt="Screenshot 2025-11-06 132800" src="https://github.com/user-attachments/assets/31a6ace5-3adb-4cda-b3f0-b202c86404e5" />
+| **Nginx Live via ALB DNS**                | <img width="553" height="211" alt="Screenshot 2025-10-14 194926" src="https://github.com/user-attachments/assets/63c7205b-2bb0-45ee-b393-d9e2340789b3" /> |                 
+                                            
 ---
 
 ## 👨‍💻 Author
